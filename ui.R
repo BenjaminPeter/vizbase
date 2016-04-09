@@ -88,7 +88,7 @@ box_gridster_head <- function(head){
         head)
 }
 box_gridster_footer <- function(){
-    tags$footer('done')
+    tags$footer('done', class="box-footer")
 }
 
 
