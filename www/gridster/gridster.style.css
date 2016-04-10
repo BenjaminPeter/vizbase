@@ -1,12 +1,15 @@
 .gridster > ul, ol {
     list-style: none;
     min-width: 100%;
+    max-width: 100%;
+    border: 10px dashed green;
 }
 
 .gridster {
     width: auto;
     margin: 10 auto;
     min-width: 100%;
+    max-width: 100%;
 
 
     -webkit-transition: opacity .6s;
@@ -52,6 +55,7 @@
         margin-bottom: 10px;
         cursor: move;
         height: 40px;
+        line-height: 40px;
         flex:0 0 auto;
 }
 .shiny-plot-output img {
