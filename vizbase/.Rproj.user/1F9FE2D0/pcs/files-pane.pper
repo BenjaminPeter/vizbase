@@ -1,9 +1,0 @@
-{
-    "path" : "~/data/eems_pipeline/viz/vizbase",
-    "sortOrder" : [
-        {
-            "ascending" : true,
-            "columnIndex" : 2
-        }
-    ]
-}
