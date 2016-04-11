@@ -1,60 +1,51 @@
 source("ui_fun.R")
+source("options_fun.R")
 library(shiny)
 library(shinydashboard)
 library(shinyjs)
 library(DT)
 
-
-
-
-
-s="
-$('.my-popover').popover({
-    html:true,
-    placement:'right',
-    title: 'TTTT',
-    trigger: 'hover',
-    content:function(){
-        alert('sdfads');
-        return $($(this).data('contentwrapper')).html();
-    }
-});
-"
-
-
-test_js <- tags$script(
-HTML("
+popover_js <- tags$script(
+    HTML("
     $(document).on('click', '.toggler',function(e) {
       var parent=$(e.target).parent();
-      $(parent.data('target')).toggle();
-      $(parent).toggleClass('active');
-    });
-    $(document).on('click', '.my-popover',function(e) {
-        alert('sdfads');
+      $(parent.data('target')).show();
+      var callerid = $(parent.data('target')).attr('id');
+      plotid  = callerid.substring(callerid.indexOf('_') + 1);
+      $('#canvas_' + plotid).trigger('show');
+      $('#canvas_' + plotid).trigger('shown');
+      $(parent).addClass('active');
     });
 
-var popOverSettings = {
-    placement: 'bottom',
-    container: 'body',
-    html: true,
-    selector: '[rel=\"popover\"]',
-    content: function(){
-        return $('#P_target').html();
+    var popOverSettings = {
+        placement: 'bottom',
+        container: 'body',
+        html: true,
+        selector: '[rel=\"popover\"]',
+        content: function(){
+            return $('#P_target').html();
+        }
     }
-}
 
-$('body').popover(popOverSettings);
+    $('body').popover(popOverSettings);
+"))
 
-")
-                       )
-popover_content <- HTML(as.character(
-                     sliderInput("X", min=1, max=2, value=1, label=2)))
-popover_content <- gsub("\n", "", popover_content)
-
+test_js <- tags$script(HTML("
+    $(document).on('click', '.btnopt', function(e){
+           $('.control-sidebar').addClass('control-sidebar-open');
+           var callerid = $(e.target).closest('.btnopt').attr('id');
+           targetid  = callerid.substring(callerid.indexOf('_') + 1);
+           $('#optbox_' + targetid).show();
+    });
+    $(document).on('click', '#btn-close-sidebar', function(e){
+           $('.control-sidebar').removeClass('control-sidebar-open');
+    });
+"))
 
 header <- dashboardHeader(disable=F)
-sidebar <- dashboardSidebar(
-    sidebarMenu(
+sidebar <- function(ANALYSES){
+    menuItems <- lapply(ANALYSES, function(A)A$get_menu())
+    dashboardSidebar(sidebarMenu(
         menuItemNYI("Data", tabName = "dashboard", icon = icon("dashboard"),
             menuSubItemNYI("Summary", tabName = "subitem1", icon=icon("book")),
             menuSubItemNYI("Metadata", tabName = "subitem1"),
@@ -68,33 +59,35 @@ sidebar <- dashboardSidebar(
             menuSubItemNYI("single PC - violin", tabName = "subitem1"),
             menuSubItemNYI("single PC - spatial Interpolation", tabName = "subitem1")
         ),
-        menuItemNYIS("Maps", icon = icon("globe"),
+        menuItemNYI("Maps", icon = icon("globe"),
             menuSubItemNYI("Sample Locations", tabName = "subitem1")
         ),
-        A$get_menu()
-
-    ),
-    h5("Options"), 
-    sliderInput("test", label="X", min=3, max=1e6, value=4, step=5),
-    sliderInput("stest2", label="X", min=3, max=10, value=4, step=5)
-)
+        .list=menuItems
+    ))
+}
 
 
-body <- dashboardBody(
+body <- function(FIGURES){
+    main_boxes <- lapply(FIGURES, function(FIG)box_fig(FIG))
+    opt_boxes <- lapply(FIGURES, function(FIG)options_box_fig(FIG))
+    dashboardBody(
     includeCSS("www/css/style.css"),
     setup_gridster(),
     test_js,
-    gridster(
-        box_fig(FIG),
-        box_gridster(id="X", head="P2", uiOutput("mydf" )),
-        box_gridster(id="SDF", head="#DS", DT::dataTableOutput("tbl"), 
-        sizex=4, sizey=6)
-    ),
-
-    right_sidebar(uiOutput("sidebar_dyn"))
+    popover_js,
 
 
-)
+    #call main plots
+    gridster(main_boxes),
 
-shinyUI(dashboardPage(header, sidebar, body))
+    right_sidebar(
+        tagList(
+            div(tags$button("close", style="width:100%",
+                id="btn-close-sidebar")),
+            opt_boxes
+        )
+    )
+)}
+
+shinyUI(dashboardPage(header, sidebar(ANALYSES), body(FIGURES)))
 

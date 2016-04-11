@@ -9,5 +9,7 @@ License: What license is it under?
 LazyData: TRUE
 RoxygenNote: 5.0.1
 Collate:
-    hello.R
+    vizfigure.R
     vizDataSet.R
+    vizport.R
+    generics.R
