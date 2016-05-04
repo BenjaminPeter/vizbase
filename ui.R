@@ -3,17 +3,19 @@ source("options_fun.R")
 library(shiny)
 library(shinydashboard)
 library(shinyjs)
-library(DT)
+
 
 popover_js <- tags$script(
     HTML("
     $(document).on('click', '.toggler',function(e) {
       var parent=$(e.target).parent();
+      if(parent === undefined) parent=e.target;
       $(parent.data('target')).show();
       var callerid = $(parent.data('target')).attr('id');
-      plotid  = callerid.substring(callerid.indexOf('_') + 1);
-      $('#canvas_' + plotid).trigger('show');
-      $('#canvas_' + plotid).trigger('shown');
+
+      plotid  = callerid.substring(0, callerid.indexOf('-'));
+      $('#' + plotid + '-canvas').trigger('show');
+      $('#' + plotid + '-canvas').trigger('shown');
       $(parent).addClass('active');
     });
 
@@ -34,8 +36,8 @@ test_js <- tags$script(HTML("
     $(document).on('click', '.btnopt', function(e){
            $('.control-sidebar').addClass('control-sidebar-open');
            var callerid = $(e.target).closest('.btnopt').attr('id');
-           targetid  = callerid.substring(callerid.indexOf('_') + 1);
-           $('#optbox_' + targetid).show();
+           targetid  = callerid.substring(0, callerid.indexOf('-'));
+           $('#' + targetid + '-optbox').show();
     });
     $(document).on('click', '#btn-close-sidebar', function(e){
            $('.control-sidebar').removeClass('control-sidebar-open');
@@ -43,31 +45,25 @@ test_js <- tags$script(HTML("
 "))
 
 header <- dashboardHeader(disable=F)
-sidebar <- function(ANALYSES){
+sidebar <- function(ANALYSES, DATA_SETS){
     menuItems <- lapply(ANALYSES, function(A)A$get_menu())
-    dashboardSidebar(sidebarMenu(
-        menuItemNYI("Data", tabName = "dashboard", icon = icon("dashboard"),
-            menuSubItemNYI("Summary", tabName = "subitem1", icon=icon("book")),
-            menuSubItemNYI("Metadata", tabName = "subitem1"),
-            menuSubItemNYI("Genotype Data", tabName = "subitem1")
-        ),
-        menuItemNYI("EEMS", icon = icon("map"), tabName = "widgets"),
-        menuItemNYI("Admixture", icon = icon("bar-chart-o"), tabName = "widgets"),
-        menuItemNYI("PCA", icon = icon("bar-chart-o"),
-            menuSubItemNYI("biplot", tabName = "tbl"),
-            menuSubItemNYI("single PC - bars", tabName = "subitem1"),
-            menuSubItemNYI("single PC - violin", tabName = "subitem1"),
-            menuSubItemNYI("single PC - spatial Interpolation", tabName = "subitem1")
-        ),
-        menuItemNYI("Maps", icon = icon("globe"),
-            menuSubItemNYI("Sample Locations", tabName = "subitem1")
-        ),
-        .list=menuItems
-    ))
+    dashboardSidebar(
+	selectInput('which_dataset', 'Which Dataset should be displayed?',
+		    choices=DATA_SETS,  selected=DATA_SETS[1]),
+	sidebarMenu(
+	    withTags(li(a(icon('file'), span("Files"), href="#"),
+		     "data-target"='#filesmat-mainbox',
+		     'class' = 'toggler', id='filesmat-menu'
+			)),
+
+	    .list=menuItems
+	)
+    )
 }
 
 
-body <- function(FIGURES){
+body <- function(FIGURES, TEMPLATES, FILES){
+    FIGURES <- c(FIGURES, TEMPLATES, FILES)
     main_boxes <- lapply(FIGURES, function(FIG)box_fig(FIG))
     opt_boxes <- lapply(FIGURES, function(FIG)options_box_fig(FIG))
     dashboardBody(
@@ -89,5 +85,5 @@ body <- function(FIGURES){
     )
 )}
 
-shinyUI(dashboardPage(header, sidebar(ANALYSES), body(FIGURES)))
+shinyUI(dashboardPage(header, sidebar(MENUS, DATA_SETS), body(FIGURES, TEMPLATES, FILES)))
 

@@ -69,7 +69,7 @@ box_gridster <- function(id, head="box", ...,
 
 #! box making the figure for a FIG object
 box_fig <- function(FIG, ...){
-    id=sprintf("mainbox_%s", FIG$id)
+    id=sprintf("%s-mainbox", FIG$id)
 
     classes <- sprintf("box box-solid box-danger %s", id)
     style="background:#fff; padding:3px"
@@ -86,7 +86,8 @@ box_fig <- function(FIG, ...){
         "data-sizey"=FIG$size[2],
         style=style,
         box_fig_head(FIG),
-        div(plotOutput(sprintf("canvas_%s", FIG$id))
+        div(FIG$body()
+        #div(plotOutput(sprintf("canvas_%s", FIG$id))
             , class="box-gridster-body box-body"),
         box_gridster_footer(),
             class=classes)
@@ -98,7 +99,7 @@ box_fig_head <- function(FIG){
         div(class="box-tools pull-right",
             btn_popover("fa-question ", "Help", FIG$description),
             btn_popover("fa-info", "Info", FIG$info),
-            button_icon("fa-wrench", id=sprintf("btnopt_%s", FIG$id),
+            button_icon("fa-wrench", id=sprintf("%s-btnopt", FIG$id),
                          class="btnopt btn btn-box-tool"),
             #btn_popover("fa-wrench", "Options", do.call(HTML, lapply(FIG$get_options_popup(), as.character))),
             #button_icon("fa-minus ", "data-widget"="collapse"),

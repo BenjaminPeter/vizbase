@@ -8,12 +8,21 @@ Description: More about what it does (maybe more than one line)
 License: What license is it under?
 LazyData: TRUE
 RoxygenNote: 5.0.1
-Imports:
+Depends:
     shiny,
     R6,
-    DT
+    DT,
+    leaflet,
+    sp,
+    gstat,
+    ggplot2,
+    rworldmap,
+    ggvis
 Collate:
-    vizfigure.R
-    vizDataSet.R
+    vizFigure.R
     vizport.R
-    generics.R
+    vizTemplate.R
+    calc-interpolate_pca.R
+    old-vizDataSet.R
+    ggvis-pc2d.R
+    viz-ggv-scatter.R

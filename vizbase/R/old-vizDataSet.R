@@ -1,34 +1,18 @@
 library(R6)
 
-#' @title Generic Data Set
-#'
-#' @description represents a single data set, which we can think of the
-#' basis unit of analysis.
-#'
-#' @details test
-#' @export
-VizDataSet <- R6Class("VizDataSet",
-    public = list(
-        name = "Generic dataset",
-        id = "data",
-        description = "",
-        status = FALSE, #T if successfully loaded
-
-        initialize = function(id, name=NULL, ...){
-            set(self, id)
-            self$name = ifelse(is.null(name), id, name)
-            set_more(self, ...)
-        }
-    )
-)
 
 
+
+
+#' @title Generic Data set loaded from file
+#' @description Data Set with handlers for loading file
 #'@export
 VizDataFile <- R6Class('VizDataCSVFile',
       inherit = VizDataSet,
       public = list(
           file_name = NULL,
           data = NULL,
+          status = T,
           load = function(){print("parent")},
           initialize = function(file_name){
               set(self, file_name)
@@ -75,10 +59,11 @@ VizMetaData <- R6Class('VizMetaData',
         indiv_prov = NULL,
         pop_display = NULL,
         pop_geo = NULL,
+        status = T,
         .data = NULL,
         .indiv_data = NULL,
         .pop_data = NULL,
-        initialize = function(files, ...){
+        initialize = function(id, name=id, files=id, ...){
             if(length(files)==1){
                 self$indiv_label = VizCSVDataFile$new(sprintf('%s.indiv_label', files))
                 self$indiv_prov = VizCSVDataFile$new(sprintf('%s.indiv_prov', files))
@@ -97,6 +82,8 @@ VizMetaData <- R6Class('VizMetaData',
             } else {
                 print('warning: not init')
             }
+            self$id <- id
+            self$name <- name
         },
         load_meta_style = function(meta, pop_display, pop_geo){
             self$indiv_label = VizCSVDataFile$new(meta)
@@ -133,10 +120,9 @@ VizPCAData <- R6Class('VizPCAData',
     inherit = VizDataSet,
     public = list(
         data = NULL,
-        fam = NULL, pc=NULL,
         initialize = function(pc=NULL, fam=NULL, ...){
             print("init")
-            set_more(...)
+            set_more(self, ...)
             fam <- data.frame(sampleId=read.table(fam)[,1])
             pc <- read.table(pc)
             names(pc) <- sprintf("PC%s", 1:ncol(pc))
@@ -144,6 +130,27 @@ VizPCAData <- R6Class('VizPCAData',
             self$pc <- pc
             print(dim(fam))
             self$data <- cbind(fam, pc)
+        },
+        recipe = function(input, output, session){
+            output$canvas <- DT::renderDataTable({
+                x =self$data
+                DT::datatable(
+                    x, options = list(
+                        lengthMenu = list(c(5, 15, -1), c('5', '15', 'All')),
+                        pageLength = 15,
+                        colReorder = T,
+                        scrollX = T,
+                        scrollY = T,
+                        dom = 'Bfrtip',
+                        buttons = c('csv', 'colvis')
+                    ),
+                    extensions = c('Buttons', 'ColReorder'))
+            })
+            return(self$data)
+        },
+        body = function(){
+            DT::dataTableOutput(sprintf("%s-canvas", self$id))
         }
     )
 )
+

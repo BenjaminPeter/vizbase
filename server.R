@@ -1,35 +1,57 @@
 library(shiny)
-library(DT)
-source("ui_fun.R")
-library(vizbase)
 
 
+server_fun <- function(FIGURES, TEMPLATES){
+    function(input, output, session) {
 
-server_fun <- function(FIGURES){
-    function(input, output) {
+        # Reactive to keep track of what was selected by the user, 
+        # and allows exchanging it between different widgets.
+        # Currently ther are two values; data_set; which keeps track 
+        # of the loaded data set, and individuals, which keeps track
+        # of individuals
+        selected = reactiveValues(data_set=DATA_SETS[1],
+                                  individuals=NULL)
 
-        controller <- reactiveValues(option_panel=NULL)
+        # these observers/reactive keep track of the loaded dataset,
+        # and ensure that the input$file_select and input_files stay
+        # up to date
+        observeEvent(input$which_dataset, {
+            selected$data_set <- input$which_dataset
+        })
+        observeEvent(selected$data_set,{
+            updateSelectInput(session, 'which_dataset',
+                              selected = selected$data_set)
+        })
 
-        for(FIG in FIGURES){
+        # named vector of file names to be loaded. Gets passed to
+        # data modules
+        input_files <- reactive({
+            data.matrix[input$which_dataset,]
+        })
 
-            # main plot renderer
-            b_plot <- sprintf('canvas_%s', FIG$id)
-            if(is.null(FIG$renderEnv)){
-                f <- match.fun(FIG$renderFun)
-            } else {
-                f <- get(FIG$renderFun, envir=FIG$renderEnv)
-            }
-            ff <<- f
-            output[[b_plot]] <- f(FIG$recipe, quoted=T)
 
-            # option box display control
-            opt_plot <- sprintf('optbox_%s', FIG$id)
-            observeEvent(input$ob_runif, {
-                         controller$option_panel <- FIG
-            })
-        }
+        # loads data files
+        LOADED <- sapply(TEMPLATES, function(tmpl){
+             callModule(tmpl$recipe, id=tmpl$id,
+                        files=input_files)
+            }, USE.NAMES=T
+        )
+        DEBUG_LOADED <<- LOADED
+
+
+        # displays figures
+        fig_res <- lapply(FIGURES, function(fig){
+            callModule(fig$recipe, id=fig$id, 
+                       data_sets = LOADED[fig$data_sets],
+                       selected=selected)
+               }
+        )
+        DEBUG_fig_res <<- fig_res
+
+        # shows table of all possible files
+        callModule(FILES$recipe, id=FILES$id, selected=selected)
     }
 }
 
 
-shinyServer( server_fun(FIGURES))
+shinyServer( server_fun(FIGURES, TEMPLATES))
