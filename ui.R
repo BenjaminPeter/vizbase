@@ -68,9 +68,9 @@ body <- function(FIGURES, TEMPLATES, FILES){
     opt_boxes <- lapply(FIGURES, function(FIG)options_box_fig(FIG))
     dashboardBody(
     includeCSS("www/css/style.css"),
-    setup_gridster(),
-    test_js,
-    popover_js,
+    #setup_gridster(),
+    #test_js,
+    #popover_js,
 
 
     #call main plots

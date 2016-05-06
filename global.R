@@ -1,5 +1,5 @@
-#source("vizbase/R/vizfigure.R")
-library(vizbase)
+source("vizbase/import.R")
+#library(vizbase)
 
 M <- VizMenu$new(name="DEBUG", description="minimal example analysis")
 Mdata <- VizMenu$new(name="Data Tables", description="Tables of raw data files",
@@ -16,6 +16,7 @@ FIG2 <- VizFigureDemo$new(menu=M, active_on_startup=F)
 FIG3 <- VizMap$new(menu=Mmap, active_on_startup=F)
 FIG4 <- VizPCASpat$new(menu=Mpca, active_on_startup=F)
 FIG5 <- VizGGVScatter$new(menu=Mpca, active_on_startup=T)
+FIGSEL <- VizSelectionDebug$new(menu=M, active_on_startup=T)
 
 TEMPLATES <- list(pca=VizPCATemplate$new(id='pca', menu=Mdata),
 		  meta=VizMetaTemplate$new(id='meta', menu=Mdata),
@@ -24,8 +25,7 @@ TEMPLATES <- list(pca=VizPCATemplate$new(id='pca', menu=Mdata),
 
 MENUS <- list(Mdata, Mmap, Mpca, M)
 DATA_SETS = c("africa", "india", "oceania")
-#FIGURES <- c(unlist(lapply(MENUS, function(i)i$figures)))
-FIGURES <- list(FIG5, FIG2, FIG3, FIG4)
+FIGURES <- list(FIGSEL, FIG5, FIG2, FIG3, FIG4)
 
 FILE_TEMPLATES <- unlist(unname(lapply(TEMPLATES, function(TPL)TPL$templates)))
 data.matrix <- sapply(FILE_TEMPLATES, sprintf, DATA_SETS)

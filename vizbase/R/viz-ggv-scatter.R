@@ -11,6 +11,11 @@ VizGGVScatter <- R6Class("VizGGVScatter",
                           body = function(){
                               ggvisOutput(sprintf("%s-canvas", self$id))
                           },
+                          click_handler = function(data, location, session){
+                              print("CLICKCLICK")
+                                print(data)
+                              print(location)
+                          },
                           recipe = function(input, output, session, data_sets, selected=NULL){
 
                               data <- reactive({
@@ -21,7 +26,6 @@ VizGGVScatter <- R6Class("VizGGVScatter",
                                   names(pcs)[-1] <- c('x', 'y')
                                   data <- merge(pcs, data_sets$meta(), all.x=T)
                                   print(c("GGV SCATTER-RECIPE", names(data)))
-                                  data$color[1:100] = 'blue'
                                   data
                                   })
                               #reactive({
@@ -30,8 +34,9 @@ VizGGVScatter <- R6Class("VizGGVScatter",
 
 
                                   QQQ = data %>% ggvis(x = ~x, y = ~y, key := ~sampleId, fill = ~color, stroke := 'black') %>%
-                                      layer_points(stroke.brush := 'purple') %>%
-                                      handle_brush(brushed_summary)%>%
+                                      layer_points(stroke.brush := 'purple', stroke.hover:='green') %>%
+                                      handle_brush(self$click_handler)%>%
+                                      handle_click(self$click_handler) %>%
                                       add_axis('x', title='') %>%
                                       add_axis('y', title='') %>%
                                       bind_shiny(paste0(self$id, "-canvas"))

@@ -4,6 +4,32 @@ library(DT)
 library(sp)
 library(leaflet)
 
+
+#' NS replacement as workaround for shiny modules.
+#'
+#' I am currently not using modules because they don't properly work with
+#' ggvis bindings. However, since the id of the module is saved in the
+#' object this should not be a big problem.
+NS <- function (namespace, id = NULL) {
+    if (missing(id)) {
+        function(id) {
+            paste(c(namespace, id), collapse = ns.sep)
+        }
+    }
+    else {
+        paste(c(namespace, id), collapse = ns.sep)
+    }
+}
+
+
+#' easy setting of shiny input/output ids
+#' use as idify(output, self$id, name) <- value will simply
+#' set output$id-name to value
+`idify<-` <- function(output, id, name, value){
+    output[NS(id,name)] <- value; output
+}
+
+
 #' Function to shorten init
 set <- function(self, value){
     name <- deparse(substitute(value))
@@ -55,11 +81,22 @@ VizFigure <-    R6Class("VizFigure",
                          info =  "set some info",
                          active_on_startup = F,
                          data_sets = c(),
-                         recipe = function(input, output, session, data_sets, selected, ...){
+                         idify = function(output, attr, value){
+                             idify(output, self$id, attr) <- value
+                             output
+                         },
+                         recipe_module = function(input, output, session, data_sets, selected, ...){
                              print("recipe plt called")
                              output$canvas <- renderPlot({
                                  plot(NA, xlim=0:1, ylim=0:1)
                              })
+                         },
+                         recipe = function(input, output, session, data_sets, selected, ...){
+                             print("recipe plt called")
+
+                             self$idify(output, canvas,  renderPlot({
+                                 plot(NA, xlim=0:1, ylim=0:1)
+                             }))
                          },
 
                          initialize = function(...){
@@ -93,6 +130,50 @@ VizFigure <-    R6Class("VizFigure",
                              )
                          }
                      )
+)
+
+#' @title QQ
+#' @export
+VizSelectionDebug <-    R6Class("VizSelectionDebug",
+                        inherit=VizFigure,
+                        public = list(
+                            menu = NULL,
+                            id="seldebug",
+                            name ="Debug for selection",
+                            size = c(3,3),
+                            pos = c(1,1),
+                            active_on_startup = T,
+                            data_sets = c(),
+                            initialize = function(...){
+                                set_more(self, ...)
+                                l <- list(...)
+                                if(!is.null(l$menu)){
+                                    self$menu$add_figure(self)
+                                }
+                            },
+
+                            recipe = function(input, output, session, data_sets, selected, ...){
+
+                                output$canvas <- renderPrint({
+                                    print(selected$individuals)
+                                })
+                              },
+
+
+                            body = function(){
+                                ns <- NS(self$id)
+                                verbatimTextOutput(ns("canvas"))
+                            },
+                            options_sidebar = function(){
+                                print("options called")
+                                print(environment())
+                                div(class="tab-content",
+                                    div(class='tab-pane active',
+                                        "No Options Defined"
+                                    )
+                                )
+                            }
+                        )
 )
 
 #'@export
