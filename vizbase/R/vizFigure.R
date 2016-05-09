@@ -80,24 +80,19 @@ VizFigure <-    R6Class("VizFigure",
                          description = "Set description",
                          info =  "set some info",
                          active_on_startup = F,
+                         ggvis_workaround = F,
                          data_sets = c(),
                          idify = function(output, attr, value){
                              idify(output, self$id, attr) <- value
                              output
                          },
-                         recipe_module = function(input, output, session, data_sets, selected, ...){
+                         recipe = function(input, output, session, data_sets, selected, ...){
                              print("recipe plt called")
                              output$canvas <- renderPlot({
                                  plot(NA, xlim=0:1, ylim=0:1)
                              })
                          },
-                         recipe = function(input, output, session, data_sets, selected, ...){
-                             print("recipe plt called")
 
-                             self$idify(output, canvas,  renderPlot({
-                                 plot(NA, xlim=0:1, ylim=0:1)
-                             }))
-                         },
 
                          initialize = function(...){
                              set_more(self, ...)
@@ -271,18 +266,13 @@ VizPCASpat <- R6Class("VizPCASpat",
         description = "Circles show sample locations",
         data_sets = c('meta','pca', 'boundary'),
         recipe = function(input, output, session, data_sets, selected=NULL){
+
             output$canvas <- renderPlot({
                 meta <- data_sets$meta()
                 pca <- data_sets$pca()
                 boundary <- data_sets$boundary()
                 x <- merge(meta, pca, all.y=T)
                 coordinates(x) <- ~ longitude + latitude
-
-                selIds <- x$sampleId %in% selected$individuals
-                selInds <- x$sampleId[selIds]
-
-                print("selected Individuals")
-                print(selInds)
 
                 plot_factor_interpolation(x, boundary,
                                           PC=paste0("PC", input$PC),

@@ -41,10 +41,21 @@ server_fun <- function(FIGURES, TEMPLATES){
 
         # displays figures
         fig_res <- lapply(FIGURES, function(fig){
+            if(!fig$ggvis_workaround){
+            print(LOADED[fig$data_sets])
+            cat(paste0("loading.. ", fig$id))
             callModule(fig$recipe, id=fig$id, 
                        data_sets = LOADED[fig$data_sets],
+                       selected=selected
+                       )
+            print(" ..done")
+           } else{
+            print(paste0("loading with ggvis workaround", fig$id))
+            fig$recipe(input=input, output=output, session=session,
+                       data_sets = LOADED[fig$data_sets],
                        selected=selected)
-               }
+            }
+        }
         )
         DEBUG_fig_res <<- fig_res
 
