@@ -1,7 +1,7 @@
 library(shiny)
 
 
-server_fun <- function(FIGURES, TEMPLATES){
+server_fun <- function(FIGURES, TEMPLATES, DASHBOARDS){
     function(input, output, session) {
 
         # Reactive to keep track of what was selected by the user, 
@@ -65,4 +65,4 @@ server_fun <- function(FIGURES, TEMPLATES){
 }
 
 
-shinyServer( server_fun(FIGURES, TEMPLATES))
+shinyServer( server_fun(FIGURES, TEMPLATES, list()))
