@@ -33,6 +33,7 @@ VizGGVScatter <- R6Class("VizGGVScatter",
                                   pcs <- data_sets$pca()[,c('sampleId', PCX, PCY)]
                                   names(pcs)[-1] <- c('x', 'y')
                                   data <- merge(pcs, data_sets$meta(), all.x=T)
+				  DDEBUG <<- data
                                   data$color <- as.character(data$color)
                                   data
                                   })

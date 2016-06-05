@@ -1,3 +1,7 @@
+col2hex <- function(colors){
+    apply(col2rgb(colors), 2, function(i)sprintf('#%.2x%.2x%.2x', i[1], i[2], i[3]))
+}
+
 #' @title Generic Data Set
 #'
 #' @description represents a single data set, which we can think of the
@@ -155,6 +159,9 @@ VizMetaTemplate <- R6Class('VizMetaTemplate',
               pd <- read.csv(src['pop_display'], as.is=T)
               pg <- read.csv(src['pop_geo'], as.is=T)
               im <- read.csv(src['indiv_meta'], as.is=T)
+
+	      pd$color <- col2hex(as.character(pd$color))
+	      pd$colorAlt <- col2hex(as.character(pd$colorAlt))
               pop_data <- merge(pd, pg)
 
               data <- merge(im, pop_data, all.x=T)

@@ -33,12 +33,12 @@ MENUS <- list(Mdata, Mmap, Mpca, MDEBUG)
 
 
 # set up figures
-FIG <- VizFigure$new(menu=M, active_on_startup=F)
-FIG2 <- VizFigureDemo$new(menu=M, active_on_startup=F)
+FIG <- VizFigure$new(menu=MDEBUG, active_on_startup=F)
+FIG2 <- VizFigureDemo$new(menu=MDEBUG, active_on_startup=F)
 FIG3 <- VizMap$new(menu=Mmap, active_on_startup=T)
 FIG4 <- VizPCASpat$new(menu=Mpca, active_on_startup=T)
 FIG5 <- VizGGVScatter$new(menu=Mpca, active_on_startup=T)
-FIGSEL <- VizSelectionDebug$new(menu=M, active_on_startup=F)
+FIGSEL <- VizSelectionDebug$new(menu=MDEBUG, active_on_startup=F)
 
 FIGURES <- list(FIGSEL, FIG5, FIG2, FIG3, FIG4)
 
@@ -52,7 +52,7 @@ FILE_TEMPLATES <- unlist(unname(lapply(TEMPLATES, function(TPL)TPL$templates)))
 
 
 # DATA_SETS  contain independent data that can be swtiched out on the fly
-DATA_SETS = c("africa", "europe", "india", "oceania")
+DATA_SETS = c("europe", "africa")
 #data_matrix stores all file names that will be needed
 data_matrix <- sapply(FILE_TEMPLATES, sprintf, DATA_SETS)
 rownames(data_matrix) <- DATA_SETS
