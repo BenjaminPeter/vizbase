@@ -5,48 +5,10 @@ library(shinydashboard)
 library(shinyjs)
 
 
-popover_js <- tags$script(
-    HTML("
-    $(document).on('click', '.toggler',function(e) {
-      var parent=$(e.target).parent();
-      if(parent === undefined) parent=e.target;
-      $(parent.data('target')).show();
-      var callerid = $(parent.data('target')).attr('id');
-
-      plotid  = callerid.substring(0, callerid.indexOf('-'));
-      $('#' + plotid + '-canvas').trigger('show');
-      $('#' + plotid + '-canvas').trigger('shown');
-      $(parent).addClass('active');
-    });
-
-    var popOverSettings = {
-        placement: 'bottom',
-        container: 'body',
-        html: true,
-        selector: '[rel=\"popover\"]',
-        content: function(){
-            return $('#P_target').html();
-        }
-    }
-
-    $('body').popover(popOverSettings);
-"))
-
-test_js <- tags$script(HTML("
-    $(document).on('click', '.btnopt', function(e){
-           $('.control-sidebar').addClass('control-sidebar-open');
-           var callerid = $(e.target).closest('.btnopt').attr('id');
-           targetid  = callerid.substring(0, callerid.indexOf('-'));
-           $('#' + targetid + '-optbox').show();
-    });
-    $(document).on('click', '#btn-close-sidebar', function(e){
-           $('.control-sidebar').removeClass('control-sidebar-open');
-    });
-"))
 
 header <- dashboardHeader(disable=F)
-sidebar <- function(ANALYSES, DATA_SETS){
-    menuItems <- lapply(ANALYSES, function(A)A$get_menu())
+sidebar <- function(MENUS, DATA_SETS){
+    menuItems <- lapply(MENUS, function(M)M$get_menu())
     dashboardSidebar(
 	selectInput('which_dataset', 'Which Dataset should be displayed?',
 		    choices=DATA_SETS,  selected=DATA_SETS[1]),
@@ -68,14 +30,16 @@ body <- function(FIGURES, TEMPLATES, FILES){
     opt_boxes <- lapply(FIGURES, function(FIG)options_box_fig(FIG))
     dashboardBody(
     includeCSS("www/css/style.css"),
-    #setup_gridster(),
-    #test_js,
-    #popover_js,
+    setup_gridster(),
+    test_js,
+    popover_js,
 
 
-    #call main plots
+    #call main plot boxes
     gridster(main_boxes),
 
+
+    #set up options side-bar
     right_sidebar(
         tagList(
             div(tags$button("close", style="width:100%",

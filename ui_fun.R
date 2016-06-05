@@ -1,6 +1,7 @@
+#draft front end. Hacky and should be replaced.
+
 library(shiny)
 library(shinydashboard)
-library(DT)
 
 
 
@@ -160,3 +161,43 @@ right_sidebar <- function(...){
     )
 
 }
+
+
+popover_js <- tags$script(
+    HTML("
+    $(document).on('click', '.toggler',function(e) {
+      var parent=$(e.target).parent();
+      if(parent === undefined) parent=e.target;
+      $(parent.data('target')).show();
+      var callerid = $(parent.data('target')).attr('id');
+
+      plotid  = callerid.substring(0, callerid.indexOf('-'));
+      $('#' + plotid + '-canvas').trigger('show');
+      $('#' + plotid + '-canvas').trigger('shown');
+      $(parent).addClass('active');
+    });
+
+    var popOverSettings = {
+        placement: 'bottom',
+        container: 'body',
+        html: true,
+        selector: '[rel=\"popover\"]',
+        content: function(){
+            return $('#P_target').html();
+        }
+    }
+
+    $('body').popover(popOverSettings);
+"))
+
+test_js <- tags$script(HTML("
+    $(document).on('click', '.btnopt', function(e){
+           $('.control-sidebar').addClass('control-sidebar-open');
+           var callerid = $(e.target).closest('.btnopt').attr('id');
+           targetid  = callerid.substring(0, callerid.indexOf('-'));
+           $('#' + targetid + '-optbox').show();
+    });
+    $(document).on('click', '#btn-close-sidebar', function(e){
+           $('.control-sidebar').removeClass('control-sidebar-open');
+    });
+"))

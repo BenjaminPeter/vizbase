@@ -12,43 +12,37 @@ VizGGVScatter <- R6Class("VizGGVScatter",
                           body = function(){
                               ggvisOutput(sprintf("%s-canvas", self$id))
                           },
-                          click_handler = function(data=NULL, items=NULL, ...){
-                              if(missing(data)){
-                                  data=items
-                              }
-                              print("CLICKCLICK")
-                              print(data)
+                          brush_handler = function(data, ...){
+                              print('brush')
                           },
+                          click_handler = function(data, ...){
+                              print('click')
+                              reactive({
+                                 d <- datas()
+                                 is_selected <- as.character(data$sampleId) %in% as.character(d$sampleId)
+                                d$color[is_selected] <- 'yellow'
+                          })},
                           recipe = function(input, output, session, data_sets, selected=NULL,
                                              ...){
-                                print("in ggvis")
-                              print(data_sets)
+                              ns <- NS(self$id)
                               datas <- reactive({
                                   print("reacting to data changing")
-                                  PCX <- paste0('PC', 1)#input$PCX)
-                                  PCY <- paste0('PC', 2)#input$PCY)
+                                  PCX <- paste0('PC', input[[ns('PCX')]])
+                                  PCY <- paste0('PC', input[[ns('PCY')]])
 
                                   pcs <- data_sets$pca()[,c('sampleId', PCX, PCY)]
                                   names(pcs)[-1] <- c('x', 'y')
                                   data <- merge(pcs, data_sets$meta(), all.x=T)
                                   data$color <- as.character(data$color)
-                                  print(c("GGV SCATTER-RECIPE", names(data)))
                                   data
                                   })
 
-                              test_click_handler <- function(data, ...){
-                                  reactive({
-                                  print(data)
-                                     d <- datas()
-                                     is_selected <- as.character(data$sampleId) %in% as.character(d$sampleId)
-                                    d$color[is_selected] <- 'yellow'
-
-                              })}
 
 
                                   QQQ = datas %>% ggvis(x = ~x, y = ~y, key := ~sampleId, fill := ~color, stroke := 'black') %>%
                                       layer_points(stroke.brush := 'purple', stroke.hover:='green') %>%
-                                      handle_click(test_click_handler) %>%
+                                      handle_click(self$click_handler) %>%
+                                      handle_brush(self$brush_handler) %>%
                                       scale_nominal('fill') %>%
                                       add_axis('x', title='') %>%
                                       add_axis('y', title='') %>%
