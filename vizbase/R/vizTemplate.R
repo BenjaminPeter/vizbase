@@ -146,15 +146,15 @@ VizMetaTemplate <- R6Class('VizMetaTemplate',
   lock_objects = F,
   public = list(
       templates = c(indiv_meta='subset/%s.indiv_meta',
-                    pop_display='pgs/gvar.pop_display',
+                    pop_display='subset/%s.pop_display',
                     pop_geo='subset/%s.pop_geo'),
       recipe = function(input, output, session, files){
           data <- reactive({
               src = files()
 
-              pd <- read.csv(src['pop_display'])
-              pg <- read.csv(src['pop_geo'])
-              im <- read.csv(src['indiv_meta'])
+              pd <- read.csv(src['pop_display'], as.is=T)
+              pg <- read.csv(src['pop_geo'], as.is=T)
+              im <- read.csv(src['indiv_meta'], as.is=T)
               pop_data <- merge(pd, pg)
 
               data <- merge(im, pop_data, all.x=T)
